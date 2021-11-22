@@ -1,83 +1,141 @@
-LCD driver for the Raspberry PI Installation<br>
-====================================================
-Update: <br>
-v2.0-20200623<br>
-Update touch screen function<br>
-Update: <br>
-v1.9-20181204<br>
-Update to support MHS40 & MHS32<br>
-Update: <br>
-v1.8-20180907<br>
-Update to support MHS35<br>
-Update: <br>
-v1.7-20180320<br>
-Update to support Raspbian Version:March 2018(Release date:2018-03-13)<br>
-Update: <br>
-  v1.6-20170824<br>
-  Update xserver to support Raspbian-2017-08-16<br>
-Update: <br>
-  v1.5-20170706<br>
-  Update to support Raspbian-2017-07-05,Raspbian-2017-06-21<br>
-Update: <br>
-  v1.3-20170612<br>
-  fixed to support Raspbian-2017-03-02,Raspbian-2017-04-10<br>
-Update: <br>
-  v1.2-20170302<br>
-  Add xserver-xorg-input-evdev_1%3a2.10.3-1_armhf.deb to support Raspbian-2017-03-02<br>
-Update: <br>
-  v1.1-20160815<br><br>
-  
-1.)Step1, Install Kali-linux official mirror <br>
-====================================================
-  a)Download Kali-linux official mirror:<br>
-  https://www.offensive-security.com/kali-linux-arm-images/<br>
-  b)Use“SDFormatter.exe”to Format your TF Card<br>
-  c)Use“Win32DiskImager.exe” Burning mirror to TF Card<br>
-     
-2.) Step2, Clone my repo onto your pi<br>
-====================================================
-Use SSH to connect the raspberry pi, <br>
-And Ensure that the raspberry pi is connected to the Internet before executing the following commands:
------------------------------------------------------------------------------------------------------
+# Set up Kali linux on RPi 3 B+
 
-```sudo rm -rf LCD-show-kali```<br>
-```git clone https://github.com/lcdwiki/LCD-show-kali.git```<br>
-```chmod -R 755 LCD-show-kali```<br>
-```cd LCD-show-kali/```<br>
-  
-3.)Step3, According to your LCD's type, excute:
-====================================================
-In case of 2.4" RPi Display(MPI2401)<br>
-  ```sudo ./LCD24-show```<br><br>
-In case of 2.8" RPi Display(MPI2801)<br>
-  ```sudo ./LCD28-show```<br><br>
-In case of 3.2" RPi Display(MPI3201)<br>
-  ```sudo ./LCD32-show```<br><br>
-In case of 3.5inch RPi Display(MPI3501)<br>
-  ```sudo ./LCD35-show```<br><br>
-In case of 3.5" HDMI Display-B(MPI3508)<br>
-  ```sudo ./MPI3508-show```<br><br>
- In case of 3.2" High Speed display(MHS32)<br>
-  ```sudo ./MHS32-show```<br><br>
-In case of 3.5" High Speed display(MHS35)<br>
-  ```sudo ./MHS35-show```<br><br>
-In case of 4.0" High Speed display(MHS40)<br>
-  ```sudo ./MHS40-show```<br><br>
-In case of 4.0" HDMI Display(MPI4008)<br>
-  ```sudo ./MPI4008-show```<br><br>
-In case of 5inch HDMI Display-B(Capacitor touch)(MPI5001):<br>
-  ```sudo ./MPI5001-show```<br><br>  
-In case of 5inch HDMI Display(Resistance touch)(MPI5008)<br>
-  ```sudo ./LCD5-show```<br><br>
-In case of 7inch HDMI Display-B-800X480(MPI7001)<br>
-  ```sudo ./LCD7B-show```<br><br>
-In case of 7inch HDMI Display-C-1024X600(MPI7002)<br>
-  ```sudo ./LCD7C-show```<br><br><br>
-If you need to switch back to the traditional HDMI display<br>
-  ```sudo ./LCD-hdmi```<br>
+## How to set up LCD 3.5" MPI3508
 
-Wait a few minutes,the system will restart automaticall , enjoy with your LCD.
--------------------------------------------------------------------------------
-The LCD-show.tar.gz also can be download from:
-http://www.lcdwiki.com/RaspberryPi-LCD-Driver
-<br><br>
+Used system `kali-linux-2021.3-rpi4-nexmon-arm64.img.xz`
+
+1. Install kali on sd card using `balenaEtcher`
+2. Create backup of config.txt file `sudo cp /boot/config.txt /boot/config.txt.bk`
+3. Run kali (l: kali, p: kali) and connect with the Internet
+4. Clone repo `git clone https://github.com/lcdwiki/LCD-show-kali`
+5. Run command `cd LCD-show-kali && sudo ./LCD35-show`
+- now RPi will reboot and show kernel error
+1. Open SD card on the different computer and copy and replace code from `config.txt.bk` to `/boot/config.txt` without last section, which should be like this:
+
+```
+... rest of code from config.txt ...
+
+# If you would like to enable USB booting on your Pi, uncomment the following line.
+# Boot from microsd card with it, then reboot.
+# Don't forget to comment this back out after using, especially if you plan to use
+# sdcard with multiple machines!
+# NOTE: This ONLY works with the Raspberry Pi 3+
+#program_usb_boot_mode=1
+hdmi_force_hotplug=1
+dtparam=i2c_arm=on
+dtparam=spi=on
+enable_uart=1
+dtoverlay=tft35a:rotate=270
+```
+
+7. Update packages `apt update`
+- now rpi should works with TFT LCD 3.5
+8. Instalal package for calibration `apt-get install xinput-calibrator`.
+9.  Edit file `sudo nano /etc/X11/xorg.conf.d/99-calibration.conf` with configuration:
+
+```
+Section "InputClass"
+    Identifier      "calibration"
+    MatchProduct    "ADS7846 Touchscreen"
+    Option  "Calibration"   "160 3723 3896 181"
+	Option  "SwapAxes"	"1"
+	Option	"TransformationMatrix"  "1 0 0 0 -1 1 0 0 1"
+EndSection
+```
+
+10. Reboot system by: `reboot` command and be happy with your kali linux on LCD.
+
+- To calibrate touch screen run command `xinput-calibrator`
+
+- If you want back to HDMI connection run script `cd LCD-show-kali && sudo ./LCD35-show`
+
+### FILES
+
+[LCD drivers for kali](https://github.com/lcdwiki/LCD-show-kali)
+
+[LCD wiki](http://www.lcdwiki.com/3.5inch_RPi_Display)
+
+[LCD manual](https://www.cedelettronica.com/documents/e2a2d148-c375-428b-8967-e431a3b949a6)
+
+### Default config.txt kali linux file for RPi 3 B+
+
+```
+# For more options and information see
+# http://rpf.io/configtxt
+# Some settings may impact device functionality. See link above for details
+
+# uncomment if you get no picture on HDMI for a default "safe" mode
+#hdmi_safe=1
+
+# uncomment this if your display has a black border of unused pixels visible
+# and your display can output without overscan
+#disable_overscan=1
+
+# uncomment the following to adjust overscan. Use positive numbers if console
+# goes off screen, and negative if there is too much border
+#overscan_left=16
+#overscan_right=16
+#overscan_top=16
+#overscan_bottom=16
+
+# uncomment to force a console size. By default it will be display's size minus
+# overscan.
+#framebuffer_width=1280
+#framebuffer_height=720
+
+# uncomment if hdmi display is not detected and composite is being output
+#hdmi_force_hotplug=1
+
+# uncomment to force a specific HDMI mode (this will force VGA)
+#hdmi_group=1
+#hdmi_mode=1
+
+# uncomment to force a HDMI mode rather than DVI. This can make audio work in
+# DMT (computer monitor) modes
+#hdmi_drive=2
+
+# uncomment to increase signal to HDMI, if you have interference, blanking, or
+# no display
+#config_hdmi_boost=4
+
+# uncomment for composite PAL
+#sdtv_mode=2
+
+#uncomment to overclock the arm. 700 MHz is the default.
+#arm_freq=800
+
+# Uncomment some or all of these to enable the optional hardware interfaces
+#dtparam=i2c_arm=on
+#dtparam=i2s=on
+#dtparam=spi=on
+
+# Uncomment this to enable infrared communication.
+#dtoverlay=gpio-ir,gpio_pin=17
+#dtoverlay=gpio-ir-tx,gpio_pin=18
+
+# Additional overlays and parameters are documented /boot/overlays/README
+
+# Enable audio (loads snd_bcm2835)
+dtparam=audio=on
+
+# USB mass storage boot is available on Raspberry Pi 2B v1.2, 3A+, 3B, and 3B+ only.
+#program_usb_boot_mode=1
+
+[pi2]
+# Pi2 is 64bit only on v1.2+
+# 64bit kernel for Raspberry Pi 2 is called kernel8 (armv8a)
+kernel=kernel8-alt.img
+[pi3]
+# 64bit kernel for Raspberry Pi 3 is called kernel8 (armv8a)
+kernel=kernel8-alt.img
+[pi4]
+# Enable DRM VC4 V3D driver on top of the dispmanx display stack
+#dtoverlay=vc4-fkms-v3d
+#max_framebuffers=2
+# 64bit kernel for Raspberry Pi 4 is called kernel8l (armv8a)
+kernel=kernel8l-alt.img
+[all]
+#dtoverlay=vc4-fkms-v3d
+# Tell firmware to go 64bit mode.
+arm_64bit=1
+```
