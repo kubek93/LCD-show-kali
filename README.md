@@ -1,5 +1,14 @@
 # Set up Kali linux on RPi 3 B+
 
+> Instructions below are related with the [original project](https://github.com/lcdwiki/LCD-show-kali).
+
+After fork and adjust files we can run two commands:
+
+1. `./RUN_LCD`
+2. `./RUN_HDMI`
+
+And we know everything will be working on RPi 3 B+ and kali-linux-2021.3
+
 ## How to set up LCD 3.5" MPI3508
 
 Used system `kali-linux-2021.3-rpi4-nexmon-arm64.img.xz`
